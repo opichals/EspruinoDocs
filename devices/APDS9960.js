@@ -32,179 +32,172 @@ apds.onLight(function(e) {
 exports.connect = function(i2c, options) {
     let addr = options.address || 0x39; // APDS-9960 I2C address */
     let apds = new APDS9960(i2c, addr);
-    init.call(apds);
-    apds.readProximity = readProximity.bind(apds);
-    apds.readGesture = readGesture.bind(apds);
-    apds.readAmbientLight = readAmbientLight.bind(apds);
-    apds.enableLightSensor = enableLightSensor.bind(apds);
-    apds.readRedLight = readRedLight.bind(apds);
-    apds.readGreenLight = readGreenLight.bind(apds);
-    apds.readBlueLight = readBlueLight.bind(apds);
+    init.call(apds, apds);
     return apds;
 };
 
 
+const
 /* Gesture parameters */
-let GESTURE_THRESHOLD_OUT  =  10
-let GESTURE_SENSITIVITY_1  =  50
-let GESTURE_SENSITIVITY_2  =  20
+    GESTURE_THRESHOLD_OUT  =  10,
+    GESTURE_SENSITIVITY_1  =  50,
+    GESTURE_SENSITIVITY_2  =  20,
 
 /* Error code for returned values */
-let ERROR  =                  0xFF
+    ERROR  =                  0xFF,
 
 /* Acceptable device IDs */
-let APDS9960_ID_1  =          0xAB
-let APDS9960_ID_2  =          0x9C
+    APDS9960_ID_1  =          0xAB,
+    APDS9960_ID_2  =          0x9C,
 
 /* Misc parameters */
-let FIFO_PAUSE_TIME  =        30      // Wait period (ms) between FIFO reads
+    FIFO_PAUSE_TIME  =        30,      // Wait period (ms) between FIFO reads
 
 /* APDS-9960 register addresses */
-let APDS9960_ENABLE  =        0x80
-let APDS9960_ATIME  =         0x81
-let APDS9960_WTIME  =         0x83
-let APDS9960_AILTL  =         0x84
-let APDS9960_AILTH  =         0x85
-let APDS9960_AIHTL  =         0x86
-let APDS9960_AIHTH  =         0x87
-let APDS9960_PILT  =          0x89
-let APDS9960_PIHT  =          0x8B
-let APDS9960_PERS  =          0x8C
-let APDS9960_CONFIG1  =       0x8D
-let APDS9960_PPULSE  =        0x8E
-let APDS9960_CONTROL  =       0x8F
-let APDS9960_CONFIG2  =       0x90
-let APDS9960_ID  =            0x92
-let APDS9960_STATUS  =        0x93
-let APDS9960_CDATAL  =        0x94
-let APDS9960_CDATAH  =        0x95
-let APDS9960_RDATAL  =        0x96
-let APDS9960_RDATAH  =        0x97
-let APDS9960_GDATAL  =        0x98
-let APDS9960_GDATAH  =        0x99
-let APDS9960_BDATAL  =        0x9A
-let APDS9960_BDATAH  =        0x9B
-let APDS9960_PDATA  =         0x9C
-let APDS9960_POFFSET_UR  =    0x9D
-let APDS9960_POFFSET_DL  =    0x9E
-let APDS9960_CONFIG3  =       0x9F
-let APDS9960_GPENTH  =        0xA0
-let APDS9960_GEXTH  =         0xA1
-let APDS9960_GCONF1  =        0xA2
-let APDS9960_GCONF2  =        0xA3
-let APDS9960_GOFFSET_U  =     0xA4
-let APDS9960_GOFFSET_D  =     0xA5
-let APDS9960_GOFFSET_L  =     0xA7
-let APDS9960_GOFFSET_R  =     0xA9
-let APDS9960_GPULSE  =        0xA6
-let APDS9960_GCONF3  =        0xAA
-let APDS9960_GCONF4  =        0xAB
-let APDS9960_GFLVL  =         0xAE
-let APDS9960_GSTATUS  =       0xAF
-let APDS9960_IFORCE  =        0xE4
-let APDS9960_PICLEAR  =       0xE5
-let APDS9960_CICLEAR  =       0xE6
-let APDS9960_AICLEAR  =       0xE7
-let APDS9960_GFIFO_U  =       0xFC
-let APDS9960_GFIFO_D  =       0xFD
-let APDS9960_GFIFO_L  =       0xFE
-let APDS9960_GFIFO_R  =       0xFF
+    APDS9960_ENABLE  =        0x80,
+    APDS9960_ATIME  =         0x81,
+    APDS9960_WTIME  =         0x83,
+    APDS9960_AILTL  =         0x84,
+    APDS9960_AILTH  =         0x85,
+    APDS9960_AIHTL  =         0x86,
+    APDS9960_AIHTH  =         0x87,
+    APDS9960_PILT  =          0x89,
+    APDS9960_PIHT  =          0x8B,
+    APDS9960_PERS  =          0x8C,
+    APDS9960_CONFIG1  =       0x8D,
+    APDS9960_PPULSE  =        0x8E,
+    APDS9960_CONTROL  =       0x8F,
+    APDS9960_CONFIG2  =       0x90,
+    APDS9960_ID  =            0x92,
+    APDS9960_STATUS  =        0x93,
+    APDS9960_CDATAL  =        0x94,
+    APDS9960_CDATAH  =        0x95,
+    APDS9960_RDATAL  =        0x96,
+    APDS9960_RDATAH  =        0x97,
+    APDS9960_GDATAL  =        0x98,
+    APDS9960_GDATAH  =        0x99,
+    APDS9960_BDATAL  =        0x9A,
+    APDS9960_BDATAH  =        0x9B,
+    APDS9960_PDATA  =         0x9C,
+    APDS9960_POFFSET_UR  =    0x9D,
+    APDS9960_POFFSET_DL  =    0x9E,
+    APDS9960_CONFIG3  =       0x9F,
+    APDS9960_GPENTH  =        0xA0,
+    APDS9960_GEXTH  =         0xA1,
+    APDS9960_GCONF1  =        0xA2,
+    APDS9960_GCONF2  =        0xA3,
+    APDS9960_GOFFSET_U  =     0xA4,
+    APDS9960_GOFFSET_D  =     0xA5,
+    APDS9960_GOFFSET_L  =     0xA7,
+    APDS9960_GOFFSET_R  =     0xA9,
+    APDS9960_GPULSE  =        0xA6,
+    APDS9960_GCONF3  =        0xAA,
+    APDS9960_GCONF4  =        0xAB,
+    APDS9960_GFLVL  =         0xAE,
+    APDS9960_GSTATUS  =       0xAF,
+    APDS9960_IFORCE  =        0xE4,
+    APDS9960_PICLEAR  =       0xE5,
+    APDS9960_CICLEAR  =       0xE6,
+    APDS9960_AICLEAR  =       0xE7,
+    APDS9960_GFIFO_U  =       0xFC,
+    APDS9960_GFIFO_D  =       0xFD,
+    APDS9960_GFIFO_L  =       0xFE,
+    APDS9960_GFIFO_R  =       0xFF,
 
 /* Bit fields */
-let APDS9960_PON  =           0b00000001
-let APDS9960_AEN  =           0b00000010
-let APDS9960_PEN  =           0b00000100
-let APDS9960_WEN  =           0b00001000
-let APSD9960_AIEN  =          0b00010000
-let APDS9960_PIEN  =          0b00100000
-let APDS9960_GEN  =           0b01000000
-let APDS9960_GVALID  =        0b00000001
+    APDS9960_PON  =           0b00000001,
+    APDS9960_AEN  =           0b00000010,
+    APDS9960_PEN  =           0b00000100,
+    APDS9960_WEN  =           0b00001000,
+    APSD9960_AIEN  =          0b00010000,
+    APDS9960_PIEN  =          0b00100000,
+    APDS9960_GEN  =           0b01000000,
+    APDS9960_GVALID  =        0b00000001,
 
 /* On/Off definitions */
-let OFF  =                    0
-let ON  =                     1
+    OFF  =                    0,
+    ON  =                     1,
 
 /* Acceptable parameters for setMode */
-let POWER  =                  0
-let AMBIENT_LIGHT  =          1
-let PROXIMITY  =              2
-let WAIT  =                   3
-let AMBIENT_LIGHT_INT  =      4
-let PROXIMITY_INT  =          5
-let GESTURE  =                6
-let ALL  =                    7
+    POWER  =                  0,
+    AMBIENT_LIGHT  =          1,
+    PROXIMITY  =              2,
+    WAIT  =                   3,
+    AMBIENT_LIGHT_INT  =      4,
+    PROXIMITY_INT  =          5,
+    GESTURE  =                6,
+    ALL  =                    7,
 
 /* LED Drive values */
-let LED_DRIVE_100MA  =        0
-let LED_DRIVE_50MA  =         1
-let LED_DRIVE_25MA  =         2
-let LED_DRIVE_12_5MA  =       3
+    LED_DRIVE_100MA  =        0,
+    LED_DRIVE_50MA  =         1,
+    LED_DRIVE_25MA  =         2,
+    LED_DRIVE_12_5MA  =       3,
 
 /* Proximity Gain (PGAIN) values */
-let PGAIN_1X  =               0
-let PGAIN_2X  =               1
-let PGAIN_4X  =               2
-let PGAIN_8X  =               3
+    PGAIN_1X  =               0,
+    PGAIN_2X  =               1,
+    PGAIN_4X  =               2,
+    PGAIN_8X  =               3,
 
 /* ALS Gain (AGAIN) values */
-let AGAIN_1X  =               0
-let AGAIN_4X  =               1
-let AGAIN_16X  =              2
-let AGAIN_64X  =              3
+    AGAIN_1X  =               0,
+    AGAIN_4X  =               1,
+    AGAIN_16X  =              2,
+    AGAIN_64X  =              3,
 
 /* Gesture Gain (GGAIN) values */
-let GGAIN_1X  =               0
-let GGAIN_2X  =               1
-let GGAIN_4X  =               2
-let GGAIN_8X  =               3
+    GGAIN_1X  =               0,
+    GGAIN_2X  =               1,
+    GGAIN_4X  =               2,
+    GGAIN_8X  =               3,
 
 /* LED Boost values */
-let LED_BOOST_100  =          0
-let LED_BOOST_150  =          1
-let LED_BOOST_200  =          2
-let LED_BOOST_300  =          3
+    LED_BOOST_100  =          0,
+    LED_BOOST_150  =          1,
+    LED_BOOST_200  =          2,
+    LED_BOOST_300  =          3,
 
 /* Gesture wait time values */
-let GWTIME_0MS  =             0
-let GWTIME_2_8MS  =           1
-let GWTIME_5_6MS  =           2
-let GWTIME_8_4MS  =           3
-let GWTIME_14_0MS  =          4
-let GWTIME_22_4MS  =          5
-let GWTIME_30_8MS  =          6
-let GWTIME_39_2MS  =          7
+    GWTIME_0MS  =             0,
+    GWTIME_2_8MS  =           1,
+    GWTIME_5_6MS  =           2,
+    GWTIME_8_4MS  =           3,
+    GWTIME_14_0MS  =          4,
+    GWTIME_22_4MS  =          5,
+    GWTIME_30_8MS  =          6,
+    GWTIME_39_2MS  =          7,
 
 /* Default values */
-let DEFAULT_ATIME  =          219     // 103ms
-let DEFAULT_WTIME  =          246     // 27ms
-let DEFAULT_PROX_PPULSE  =    0x87    // 16us, 8 pulses
-let DEFAULT_GESTURE_PPULSE  = 0x89    // 16us, 10 pulses
-let DEFAULT_POFFSET_UR  =     0       // 0 offset
-let DEFAULT_POFFSET_DL  =     0       // 0 offset
-let DEFAULT_CONFIG1  =        0x60    // No 12x wait (WTIME) factor
-let DEFAULT_LDRIVE  =         LED_DRIVE_100MA
-let DEFAULT_PGAIN  =          PGAIN_4X
-let DEFAULT_AGAIN  =          AGAIN_4X
-let DEFAULT_PILT  =           0       // Low proximity threshold
-let DEFAULT_PIHT  =           50      // High proximity threshold
-let DEFAULT_AILT  =           0xFFFF  // Force interrupt for calibration
-let DEFAULT_AIHT  =           0
-let DEFAULT_PERS  =           0x11    // 2 consecutive prox or ALS for int.
-let DEFAULT_CONFIG2  =        0x01    // No saturation interrupts or LED boost
-let DEFAULT_CONFIG3  =        0       // Enable all photodiodes, no SAI
-let DEFAULT_GPENTH  =         40      // Threshold for entering gesture mode
-let DEFAULT_GEXTH  =          30      // Threshold for exiting gesture mode
-let DEFAULT_GCONF1  =         0x40    // 4 gesture events for int., 1 for exit
-let DEFAULT_GGAIN  =          GGAIN_4X
-let DEFAULT_GLDRIVE  =        LED_DRIVE_100MA
-let DEFAULT_GWTIME  =         GWTIME_2_8MS
-let DEFAULT_GOFFSET  =        0       // No offset scaling for gesture mode
-let DEFAULT_GPULSE  =         0xC9    // 32us, 10 pulses
-let DEFAULT_GCONF3  =         0       // All photodiodes active during gesture
-let DEFAULT_GIEN  =           0       // Disable gesture interrupts
+    DEFAULT_ATIME  =          219,     // 103ms
+    DEFAULT_WTIME  =          246,     // 27ms
+    DEFAULT_PROX_PPULSE  =    0x87,    // 16us, 8 pulses
+    DEFAULT_GESTURE_PPULSE  = 0x89,    // 16us, 10 pulses
+    DEFAULT_POFFSET_UR  =     0,       // 0 offset
+    DEFAULT_POFFSET_DL  =     0,       // 0 offset
+    DEFAULT_CONFIG1  =        0x60,    // No 12x wait (WTIME) factor
+    DEFAULT_LDRIVE  =         LED_DRIVE_100MA,
+    DEFAULT_PGAIN  =          PGAIN_4X,
+    DEFAULT_AGAIN  =          AGAIN_4X,
+    DEFAULT_PILT  =           0,       // Low proximity threshold
+    DEFAULT_PIHT  =           50,      // High proximity threshold
+    DEFAULT_AILT  =           0xFFFF,  // Force interrupt for calibration
+    DEFAULT_AIHT  =           0,
+    DEFAULT_PERS  =           0x11,    // 2 consecutive prox or ALS for int.
+    DEFAULT_CONFIG2  =        0x01,    // No saturation interrupts or LED boost
+    DEFAULT_CONFIG3  =        0,       // Enable all photodiodes, no SAI
+    DEFAULT_GPENTH  =         40,      // Threshold for entering gesture mode
+    DEFAULT_GEXTH  =          30,      // Threshold for exiting gesture mode
+    DEFAULT_GCONF1  =         0x40,    // 4 gesture events for int., 1 for exit
+    DEFAULT_GGAIN  =          GGAIN_4X,
+    DEFAULT_GLDRIVE  =        LED_DRIVE_100MA,
+    DEFAULT_GWTIME  =         GWTIME_2_8MS,
+    DEFAULT_GOFFSET  =        0,       // No offset scaling for gesture mode
+    DEFAULT_GPULSE  =         0xC9,    // 32us, 10 pulses
+    DEFAULT_GCONF3  =         0,       // All photodiodes active during gesture
+    DEFAULT_GIEN  =           0,       // Disable gesture interrupts
 
 /* Direction definitions */
-let
      DIR_NONE = 1,
      DIR_LEFT = 2,
      DIR_RIGHT = 3,
@@ -215,11 +208,11 @@ let
      DIR_AL = 8;
 
 /* State definitions */
-let
     NA_STATE = 1,
     NEAR_STATE = 2,
     FAR_STATE = 3,
-    ALL_STATE = 4;
+    ALL_STATE = 4
+;
 
 
 function APDS9960(i2c, addr)
@@ -231,7 +224,11 @@ function APDS9960(i2c, addr)
     this.read = function(reg, count) {
         console.log('read', reg, count);
         i2c.writeTo(addr, reg);
-        return i2c.readFrom(addr, count || 1);
+        if (!count) {
+            return i2c.readFrom(addr, 1)[0];
+        } else {
+            return i2c.readFrom(addr, count);
+        }
     };
     this.gesture = {
         data_: {
@@ -255,88 +252,9 @@ function APDS9960(i2c, addr)
     }
 }
 
-/**
- * @brief Configures I2C communications and initializes registers to defaults
- *
- * @return True if initialized successfully. False otherwise.
- */
-function init()
+
+function init(apds)
 {
-    /* Read ID register and check against known values for APDS-9960 */
-    let id = this.read(APDS9960_ID);
-    console.log('ID: ', id);
-    if( !(id == APDS9960_ID_1 || id == APDS9960_ID_2) ) {
-        return false;
-    }
-
-    /* Set ENABLE register to 0 (disable all features) */
-    setMode(ALL, OFF);
-
-    /* Set default values for ambient light and proximity registers */
-    this.write(APDS9960_ATIME, DEFAULT_ATIME);
-    this.write(APDS9960_WTIME, DEFAULT_WTIME);
-    this.write(APDS9960_PPULSE, DEFAULT_PROX_PPULSE);
-    this.write(APDS9960_POFFSET_UR, DEFAULT_POFFSET_UR);
-    this.write(APDS9960_POFFSET_DL, DEFAULT_POFFSET_DL);
-    this.write(APDS9960_CONFIG1, DEFAULT_CONFIG1);
-    setLEDDrive(DEFAULT_LDRIVE);
-    setProximityGain(DEFAULT_PGAIN);
-    setAmbientLightGain(DEFAULT_AGAIN);
-    setProxIntLowThresh(DEFAULT_PILT);
-    setProxIntHighThresh(DEFAULT_PIHT);
-    setLightIntLowThreshold(DEFAULT_AILT);
-    setLightIntHighThreshold(DEFAULT_AIHT);
-    this.write(APDS9960_PERS, DEFAULT_PERS);
-    this.write(APDS9960_CONFIG2, DEFAULT_CONFIG2);
-    this.write(APDS9960_CONFIG3, DEFAULT_CONFIG3);
-
-    /* Set default values for gesture sense registers */
-    setGestureEnterThresh(DEFAULT_GPENTH);
-    setGestureExitThresh(DEFAULT_GEXTH);
-    this.write(APDS9960_GCONF1, DEFAULT_GCONF1);
-    setGestureGain(DEFAULT_GGAIN);
-    setGestureLEDDrive(DEFAULT_GLDRIVE);
-    setGestureWaitTime(DEFAULT_GWTIME);
-    this.write(APDS9960_GOFFSET_U, DEFAULT_GOFFSET);
-    this.write(APDS9960_GOFFSET_D, DEFAULT_GOFFSET);
-    this.write(APDS9960_GOFFSET_L, DEFAULT_GOFFSET);
-    this.write(APDS9960_GOFFSET_R, DEFAULT_GOFFSET);
-    this.write(APDS9960_GPULSE, DEFAULT_GPULSE);
-    this.write(APDS9960_GCONF3, DEFAULT_GCONF3);
-    setGestureIntEnable(DEFAULT_GIEN)
-
-    /* Gesture config register dump */
-/*
-#if 0
-    let reg;
-    let val;
-
-    for(reg = 0x80; reg <= 0xAF; reg++) {
-        if( (reg != 0x82) &&
-            (reg != 0x8A) &&
-            (reg != 0x91) &&
-            (reg != 0xA8) &&
-            (reg != 0xAC) &&
-            (reg != 0xAD) )
-        {
-            val = this.read(reg);
-            Serial.print(reg, HEX);
-            Serial.print(": 0x");
-            Serial.println(val, HEX);
-        }
-    }
-
-    for(reg = 0xE4; reg <= 0xE7; reg++) {
-        val = this.read(reg);
-        Serial.print(reg, HEX);
-        Serial.print(": 0x");
-        Serial.println(val, HEX);
-    }
-#endif
-*/
-
-    return true;
-}
 
 /*******************************************************************************
  * Public methods for controlling the APDS-9960
@@ -350,7 +268,7 @@ function init()
 function getMode()
 {
     /* Read current ENABLE register */
-    return this.read(APDS9960_ENABLE);
+    return read(APDS9960_ENABLE);
 }
 
 /**
@@ -384,7 +302,7 @@ function setMode(mode, enable)
     }
 
     /* Write value back to ENABLE register */
-    this.write(APDS9960_ENABLE, reg_val);
+    write(APDS9960_ENABLE, reg_val);
 }
 
 /**
@@ -455,8 +373,8 @@ function enableGestureSensor(interrupts)
        Enable PON, WEN, PEN, GEN in ENABLE
     */
     resetGestureParameters();
-    this.write(APDS9960_WTIME, 0xFF);
-    this.write(APDS9960_PPULSE, DEFAULT_GESTURE_PPULSE);
+    write(APDS9960_WTIME, 0xFF);
+    write(APDS9960_PPULSE, DEFAULT_GESTURE_PPULSE);
     setLEDBoost(LED_BOOST_300);
     setGestureIntEnable(interrupts ? 1 : 0);
     setGestureMode(1);
@@ -487,7 +405,7 @@ function disableGestureSensor()
 function isGestureAvailable()
 {
     /* Read value from GSTATUS register */
-    let val = this.read(APDS9960_GSTATUS);
+    let val = read(APDS9960_GSTATUS);
 
     /* Shift and mask out GVALID bit */
     val &= APDS9960_GVALID;
@@ -507,11 +425,12 @@ function isGestureAvailable()
  */
 function readGesture()
 {
-    let fifo_level = 0;
-    let bytes_read = 0;
-    let gstatus;
-    let motion;
-    let i;
+    let
+        fifo_level = 0,
+        bytes_read = 0,
+        gstatus,
+        motion,
+        i;
 
     /* Make sure that power and gesture is on and data is valid */
     if( !isGestureAvailable() || !(getMode() & 0b01000001) ) {
@@ -526,13 +445,13 @@ function readGesture()
         delay(FIFO_PAUSE_TIME);
 
         /* Get the contents of the STATUS register. Is data still valid? */
-        gstatus = this.read(APDS9960_GSTATUS);
+        gstatus = read(APDS9960_GSTATUS);
 
         /* If we have valid data, read in FIFO */
         if( (gstatus & APDS9960_GVALID) == APDS9960_GVALID ) {
 
             /* Read the current FIFO level */
-            fifo_level = this.read(APDS9960_GFLVL);
+            fifo_level = read(APDS9960_GFLVL);
 
 /*
 #if DEBUG
@@ -543,7 +462,7 @@ function readGesture()
 
             /* If there's stuff in the FIFO, read it into our data block */
             if( fifo_level > 0) {
-                let fifo_data = this.read(APDS9960_GFIFO_U, fifo_level * 4);
+                let fifo_data = read(APDS9960_GFIFO_U, fifo_level * 4);
                 let bytes_read = fifo_data.length;
                 if( bytes_read == -1 ) {
                     return ERROR;
@@ -645,9 +564,9 @@ function disablePower()
 function readAmbientLight()
 {
     /* Read value from clear channel, low byte register */
-    let val_lo = this.read(APDS9960_CDATAL);
+    let val_lo = read(APDS9960_CDATAL);
     /* Read value from clear channel, high byte register */
-    let val_hi = this.read(APDS9960_CDATAH);
+    let val_hi = read(APDS9960_CDATAH);
 
     return val_lo + (val_hi << 8);
 }
@@ -661,9 +580,9 @@ function readAmbientLight()
 function readRedLight()
 {
     /* Read value from clear channel, low byte register */
-    let val_lo = this.read(APDS9960_RDATAL);
+    let val_lo = read(APDS9960_RDATAL);
     /* Read value from clear channel, high byte register */
-    let val_hi = this.read(APDS9960_RDATAH);
+    let val_hi = read(APDS9960_RDATAH);
 
     return val_lo + (val_hi << 8);
 }
@@ -677,9 +596,9 @@ function readRedLight()
 function readGreenLight()
 {
     /* Read value from clear channel, low byte register */
-    let val_lo = this.read(APDS9960_GDATAL);
+    let val_lo = read(APDS9960_GDATAL);
     /* Read value from clear channel, high byte register */
-    let val_hi = this.read(APDS9960_GDATAH);
+    let val_hi = read(APDS9960_GDATAH);
 
     return val_lo + (val_hi << 8);
 }
@@ -693,9 +612,9 @@ function readGreenLight()
 function readBlueLight()
 {
     /* Read value from clear channel, low byte register */
-    let val_lo = this.read(APDS9960_BDATAL);
+    let val_lo = read(APDS9960_BDATAL);
     /* Read value from clear channel, high byte register */
-    let val_hi = this.read(APDS9960_BDATAH);
+    let val_hi = read(APDS9960_BDATAH);
 
     return val_lo + (val_hi << 8);
 }
@@ -712,7 +631,7 @@ function readBlueLight()
  */
 function readProximity()
 {
-    return this.read(APDS9960_PDATA);
+    return read(APDS9960_PDATA);
 }
 
 /*******************************************************************************
@@ -748,25 +667,25 @@ function resetGestureParameters()
  */
 function processGestureData()
 {
-    let u_first = 0;
-    let d_first = 0;
-    let l_first = 0;
-    let r_first = 0;
-    let u_last = 0;
-    let d_last = 0;
-    let l_last = 0;
-    let r_last = 0;
-    let ud_ratio_first;
-    let lr_ratio_first;
-    let ud_ratio_last;
-    let lr_ratio_last;
-    let ud_delta;
-    let lr_delta;
-    let i;
+    let u_first = 0,
+        d_first = 0,
+        l_first = 0,
+        r_first = 0,
+        u_last = 0,
+        d_last = 0,
+        l_last = 0,
+        r_last = 0,
+        ud_ratio_first,
+        lr_ratio_first,
+        ud_ratio_last,
+        lr_ratio_last,
+        ud_delta,
+        lr_delta,
+        i;
 
-    let abs = Math.abs;
-    let gesture = this.gesture;
-    let gesture_data_ = gesture.data_;
+        abs = Math.abs;
+        gesture = this.gesture;
+        gesture_data_ = gesture.data_;
 
     /* If we have less than 4 total gestures, that's not enough */
     if( gesture_data_.count <= 4 ) {
@@ -1028,7 +947,7 @@ function decodeGesture()
 function getProxIntLowThresh()
 {
     /* Read value from PILT register */
-    return this.read(APDS9960_PILT);
+    return read(APDS9960_PILT);
 }
 
 /**
@@ -1038,7 +957,7 @@ function getProxIntLowThresh()
  */
 function setProxIntLowThresh(threshold)
 {
-    this.write(APDS9960_PILT, threshold);
+    write(APDS9960_PILT, threshold);
 }
 
 /**
@@ -1048,7 +967,7 @@ function setProxIntLowThresh(threshold)
  */
 function getProxIntHighThresh()
 {
-    return this.read(APDS9960_PIHT);
+    return read(APDS9960_PIHT);
 }
 
 /**
@@ -1059,7 +978,7 @@ function getProxIntHighThresh()
  */
 function setProxIntHighThresh(threshold)
 {
-    this.write(APDS9960_PIHT, threshold);
+    write(APDS9960_PIHT, threshold);
 }
 
 /**
@@ -1075,7 +994,7 @@ function setProxIntHighThresh(threshold)
  */
 function getLEDDrive()
 {
-    let val = this.read(APDS9960_CONTROL);
+    let val = read(APDS9960_CONTROL);
 
     /* Shift and mask out LED drive bits */
     val = (val >> 6) & 0b00000011;
@@ -1097,7 +1016,7 @@ function getLEDDrive()
 function setLEDDrive(drive)
 {
     /* Read value from CONTROL register */
-    let val = this.read(APDS9960_CONTROL);
+    let val = read(APDS9960_CONTROL);
 
     /* Set bits in register to given value */
     drive &= 0b00000011;
@@ -1106,7 +1025,7 @@ function setLEDDrive(drive)
     val |= drive;
 
     /* Write register value back into CONTROL register */
-    this.write(APDS9960_CONTROL, val);
+    write(APDS9960_CONTROL, val);
 }
 
 /**
@@ -1123,7 +1042,7 @@ function setLEDDrive(drive)
 function getProximityGain()
 {
     /* Read value from CONTROL register */
-    let val = this.read(APDS9960_CONTROL);
+    let val = read(APDS9960_CONTROL);
 
     /* Shift and mask out PDRIVE bits */
     val = (val >> 2) & 0b00000011;
@@ -1146,7 +1065,7 @@ function getProximityGain()
 function setProximityGain(drive)
 {
     /* Read value from CONTROL register */
-    let val = this.read(APDS9960_CONTROL);
+    let val = read(APDS9960_CONTROL);
 
     /* Set bits in register to given value */
     drive &= 0b00000011;
@@ -1155,7 +1074,7 @@ function setProximityGain(drive)
     val |= drive;
 
     /* Write register value back into CONTROL register */
-    this.write(APDS9960_CONTROL, val);
+    write(APDS9960_CONTROL, val);
 }
 
 /**
@@ -1172,7 +1091,7 @@ function setProximityGain(drive)
 function getAmbientLightGain()
 {
     /* Read value from CONTROL register */
-    let val = this.read(APDS9960_CONTROL);
+    let val = read(APDS9960_CONTROL);
 
     /* Shift and mask out ADRIVE bits */
     val &= 0b00000011;
@@ -1195,7 +1114,7 @@ function getAmbientLightGain()
 function setAmbientLightGain(drive)
 {
     /* Read value from CONTROL register */
-    let val = this.read(APDS9960_CONTROL);
+    let val = read(APDS9960_CONTROL);
 
     /* Set bits in register to given value */
     drive &= 0b00000011;
@@ -1203,7 +1122,7 @@ function setAmbientLightGain(drive)
     val |= drive;
 
     /* Write register value back into CONTROL register */
-    this.write(APDS9960_CONTROL, val);
+    write(APDS9960_CONTROL, val);
 }
 
 /**
@@ -1220,7 +1139,7 @@ function setAmbientLightGain(drive)
 function getLEDBoost()
 {
     /* Read value from CONFIG2 register */
-    let val = this.read(APDS9960_CONFIG2);
+    let val = read(APDS9960_CONFIG2);
 
     /* Shift and mask out LED_BOOST bits */
     val = (val >> 4) & 0b00000011;
@@ -1242,7 +1161,7 @@ function getLEDBoost()
 function setLEDBoost(boost)
 {
     /* Read value from CONFIG2 register */
-    let val = this.read(APDS9960_CONFIG2);
+    let val = read(APDS9960_CONFIG2);
 
     /* Set bits in register to given value */
     boost &= 0b00000011;
@@ -1251,7 +1170,7 @@ function setLEDBoost(boost)
     val |= boost;
 
     /* Write register value back into CONFIG2 register */
-    this.write(APDS9960_CONFIG2, val);
+    write(APDS9960_CONFIG2, val);
 }
 
 /**
@@ -1262,7 +1181,7 @@ function setLEDBoost(boost)
 function getProxGainCompEnable()
 {
     /* Read value from CONFIG3 register */
-    let val = this.read(APDS9960_CONFIG3);
+    let val = read(APDS9960_CONFIG3);
 
     /* Shift and mask out PCMP bits */
     val = (val >> 5) & 0b00000001;
@@ -1278,7 +1197,7 @@ function getProxGainCompEnable()
 function setProxGainCompEnable(enable)
 {
     /* Read value from CONFIG3 register */
-    let val = this.read(APDS9960_CONFIG3);
+    let val = read(APDS9960_CONFIG3);
 
     /* Set bits in register to given value */
     enable &= 0b00000001;
@@ -1287,7 +1206,7 @@ function setProxGainCompEnable(enable)
     val |= enable;
 
     /* Write register value back into CONFIG3 register */
-    this.write(APDS9960_CONFIG3, val);
+    write(APDS9960_CONFIG3, val);
 }
 
 /**
@@ -1304,7 +1223,7 @@ function setProxGainCompEnable(enable)
  */
 function getProxPhotoMask()
 {
-    let val = this.read(APDS9960_CONFIG3);
+    let val = read(APDS9960_CONFIG3);
 
     /* Mask out photodiode enable mask bits */
     val &= 0b00001111;
@@ -1327,7 +1246,7 @@ function getProxPhotoMask()
 function setProxPhotoMask(mask)
 {
     /* Read value from CONFIG3 register */
-    let val = this.read(APDS9960_CONFIG3);
+    let val = read(APDS9960_CONFIG3);
 
     /* Set bits in register to given value */
     mask &= 0b00001111;
@@ -1335,7 +1254,7 @@ function setProxPhotoMask(mask)
     val |= mask;
 
     /* Write register value back into CONFIG3 register */
-    this.write(APDS9960_CONFIG3, val);
+    write(APDS9960_CONFIG3, val);
 }
 
 /**
@@ -1347,7 +1266,7 @@ function getGestureEnterThresh()
 {
 
     /* Read value from GPENTH register */
-    let val = this.read(APDS9960_GPENTH);
+    let val = read(APDS9960_GPENTH);
 
     return val;
 }
@@ -1359,7 +1278,7 @@ function getGestureEnterThresh()
  */
 function setGestureEnterThresh(threshold)
 {
-    this.write(APDS9960_GPENTH, threshold);
+    write(APDS9960_GPENTH, threshold);
 }
 
 /**
@@ -1369,7 +1288,7 @@ function setGestureEnterThresh(threshold)
  */
 function getGestureExitThresh()
 {
-    let val = this.read(APDS9960_GEXTH);
+    let val = read(APDS9960_GEXTH);
 
     return val;
 }
@@ -1381,7 +1300,7 @@ function getGestureExitThresh()
  */
 function setGestureExitThresh(threshold)
 {
-    this.write(APDS9960_GEXTH, threshold);
+    write(APDS9960_GEXTH, threshold);
 }
 
 /**
@@ -1398,7 +1317,7 @@ function setGestureExitThresh(threshold)
 function getGestureGain()
 {
     /* Read value from GCONF2 register */
-    let val = this.read(APDS9960_GCONF2);
+    let val = read(APDS9960_GCONF2);
 
     /* Shift and mask out GGAIN bits */
     val = (val >> 5) & 0b00000011;
@@ -1420,7 +1339,7 @@ function getGestureGain()
 function setGestureGain(gain)
 {
     /* Read value from GCONF2 register */
-    let val = this.read(APDS9960_GCONF2);
+    let val = read(APDS9960_GCONF2);
 
     /* Set bits in register to given value */
     gain &= 0b00000011;
@@ -1429,7 +1348,7 @@ function setGestureGain(gain)
     val |= gain;
 
     /* Write register value back into GCONF2 register */
-    this.write(APDS9960_GCONF2, val);
+    write(APDS9960_GCONF2, val);
 }
 
 /**
@@ -1445,7 +1364,7 @@ function setGestureGain(gain)
  */
 function getGestureLEDDrive()
 {
-    let val = this.read(APDS9960_GCONF2);
+    let val = read(APDS9960_GCONF2);
 
     /* Shift and mask out GLDRIVE bits */
     val = (val >> 3) & 0b00000011;
@@ -1467,7 +1386,7 @@ function getGestureLEDDrive()
 function setGestureLEDDrive(drive)
 {
     /* Read value from GCONF2 register */
-    let val = this.read(APDS9960_GCONF2);
+    let val = read(APDS9960_GCONF2);
 
     /* Set bits in register to given value */
     drive &= 0b00000011;
@@ -1476,7 +1395,7 @@ function setGestureLEDDrive(drive)
     val |= drive;
 
     /* Write register value back into GCONF2 register */
-    this.write(APDS9960_GCONF2, val);
+    write(APDS9960_GCONF2, val);
 }
 
 /**
@@ -1497,7 +1416,7 @@ function setGestureLEDDrive(drive)
 function getGestureWaitTime()
 {
     /* Read value from GCONF2 register */
-    let val = this.read(APDS9960_GCONF2);
+    let val = read(APDS9960_GCONF2);
 
     /* Mask out GWTIME bits */
     val &= 0b00000111;
@@ -1523,7 +1442,7 @@ function getGestureWaitTime()
 function setGestureWaitTime(time)
 {
     /* Read value from GCONF2 register */
-    let val = this.read(APDS9960_GCONF2);
+    let val = read(APDS9960_GCONF2);
 
     /* Set bits in register to given value */
     time &= 0b00000111;
@@ -1531,7 +1450,7 @@ function setGestureWaitTime(time)
     val |= time;
 
     /* Write register value back into GCONF2 register */
-    this.write(APDS9960_GCONF2, val);
+    write(APDS9960_GCONF2, val);
 }
 
 /**
@@ -1542,9 +1461,9 @@ function setGestureWaitTime(time)
 function getLightIntLowThreshold()
 {
     /* Read value from ambient light low threshold, low byte register */
-    let val_lo = this.read(APDS9960_AILTL);
+    let val_lo = read(APDS9960_AILTL);
     /* Read value from ambient light low threshold, high byte register */
-    let val_hi = this.read(APDS9960_AILTH);
+    let val_hi = read(APDS9960_AILTH);
     return val_lo + (val_hi << 8);
 }
 
@@ -1556,8 +1475,8 @@ function getLightIntLowThreshold()
 function setLightIntLowThreshold(threshold)
 {
     /* Break 16-bit threshold into 2 8-bit values */
-    this.write(APDS9960_AILTL, threshold & 0x00FF);
-    this.write(APDS9960_AILTH, (threshold & 0xFF00) >> 8);
+    write(APDS9960_AILTL, threshold & 0x00FF);
+    write(APDS9960_AILTH, (threshold & 0xFF00) >> 8);
 }
 
 /**
@@ -1568,9 +1487,9 @@ function setLightIntLowThreshold(threshold)
 function getLightIntHighThreshold()
 {
     /* Read value from ambient light high threshold, low byte register */
-    let val_lo = this.read(APDS9960_AIHTL);
+    let val_lo = read(APDS9960_AIHTL);
     /* Read value from ambient light high threshold, high byte register */
-    let val_hi = this.read(APDS9960_AIHTH);
+    let val_hi = read(APDS9960_AIHTH);
     return val_lo + (val_hi << 8);
 }
 
@@ -1581,8 +1500,8 @@ function getLightIntHighThreshold()
  */
 function setLightIntHighThreshold(threshold)
 {
-    this.write(APDS9960_AIHTL, threshold & 0x00FF);
-    this.write(APDS9960_AIHTH, (threshold & 0xFF00) >> 8);
+    write(APDS9960_AIHTL, threshold & 0x00FF);
+    write(APDS9960_AIHTH, (threshold & 0xFF00) >> 8);
 }
 
 /**
@@ -1593,7 +1512,7 @@ function setLightIntHighThreshold(threshold)
 function getProximityIntLowThreshold()
 {
     /* Read value from proximity low threshold register */
-    return this.read(APDS9960_PILT);
+    return read(APDS9960_PILT);
 }
 
 /**
@@ -1604,7 +1523,7 @@ function getProximityIntLowThreshold()
 function setProximityIntLowThreshold(threshold)
 {
     /* Write threshold value to register */
-    this.write(APDS9960_PILT, threshold);
+    write(APDS9960_PILT, threshold);
 }
 
 /**
@@ -1615,7 +1534,7 @@ function setProximityIntLowThreshold(threshold)
 function getProximityIntHighThreshold()
 {
     /* Read value from proximity low threshold register */
-    return this.read(APDS9960_PIHT);
+    return read(APDS9960_PIHT);
 }
 
 /**
@@ -1626,7 +1545,7 @@ function getProximityIntHighThreshold()
 function setProximityIntHighThreshold(threshold)
 {
     /* Write threshold value to register */
-    this.write(APDS9960_PIHT, threshold);
+    write(APDS9960_PIHT, threshold);
 }
 
 /**
@@ -1637,7 +1556,7 @@ function setProximityIntHighThreshold(threshold)
 function getAmbientLightIntEnable()
 {
     /* Read value from ENABLE register */
-    let val = this.read(APDS9960_ENABLE);
+    let val = read(APDS9960_ENABLE);
 
     /* Shift and mask out AIEN bit */
     val = (val >> 4) & 0b00000001;
@@ -1653,7 +1572,7 @@ function getAmbientLightIntEnable()
 function setAmbientLightIntEnable(enable)
 {
     /* Read value from ENABLE register */
-    let val = this.read(APDS9960_ENABLE);
+    let val = read(APDS9960_ENABLE);
 
     /* Set bits in register to given value */
     enable &= 0b00000001;
@@ -1662,7 +1581,7 @@ function setAmbientLightIntEnable(enable)
     val |= enable;
 
     /* Write register value back into ENABLE register */
-    this.write(APDS9960_ENABLE, val);
+    write(APDS9960_ENABLE, val);
 }
 
 /**
@@ -1673,7 +1592,7 @@ function setAmbientLightIntEnable(enable)
 function getProximityIntEnable()
 {
     /* Read value from ENABLE register */
-    let val = this.read(APDS9960_ENABLE);
+    let val = read(APDS9960_ENABLE);
 
     /* Shift and mask out PIEN bit */
     val = (val >> 5) & 0b00000001;
@@ -1689,7 +1608,7 @@ function getProximityIntEnable()
 function setProximityIntEnable(enable)
 {
     /* Read value from ENABLE register */
-    let val = this.read(APDS9960_ENABLE);
+    let val = read(APDS9960_ENABLE);
 
     /* Set bits in register to given value */
     enable &= 0b00000001;
@@ -1698,7 +1617,7 @@ function setProximityIntEnable(enable)
     val |= enable;
 
     /* Write register value back into ENABLE register */
-    this.write(APDS9960_ENABLE, val);
+    write(APDS9960_ENABLE, val);
 }
 
 /**
@@ -1709,7 +1628,7 @@ function setProximityIntEnable(enable)
 function getGestureIntEnable()
 {
     /* Read value from GCONF4 register */
-    let val = this.read(APDS9960_GCONF4);
+    let val = read(APDS9960_GCONF4);
 
     /* Shift and mask out GIEN bit */
     val = (val >> 1) & 0b00000001;
@@ -1725,7 +1644,7 @@ function getGestureIntEnable()
 function setGestureIntEnable(enable)
 {
     /* Read value from GCONF4 register */
-    let val = this.read(APDS9960_GCONF4);
+    let val = read(APDS9960_GCONF4);
 
     /* Set bits in register to given value */
     enable &= 0b00000001;
@@ -1734,7 +1653,7 @@ function setGestureIntEnable(enable)
     val |= enable;
 
     /* Write register value back into GCONF4 register */
-    this.write(APDS9960_GCONF4, val);
+    write(APDS9960_GCONF4, val);
 }
 
 /**
@@ -1744,7 +1663,7 @@ function setGestureIntEnable(enable)
  */
 function clearAmbientLightInt()
 {
-    this.read(APDS9960_AICLEAR);
+    read(APDS9960_AICLEAR);
 }
 
 /**
@@ -1754,7 +1673,7 @@ function clearAmbientLightInt()
  */
 function clearProximityInt()
 {
-    this.read(APDS9960_PICLEAR);
+    read(APDS9960_PICLEAR);
 }
 
 /**
@@ -1765,7 +1684,7 @@ function clearProximityInt()
 function getGestureMode()
 {
     /* Read value from GCONF4 register */
-    let val = this.read(APDS9960_GCONF4);
+    let val = read(APDS9960_GCONF4);
 
     /* Mask out GMODE bit */
     val &= 0b00000001;
@@ -1781,7 +1700,7 @@ function getGestureMode()
 function setGestureMode(mode)
 {
     /* Read value from GCONF4 register */
-    let val = this.read(APDS9960_GCONF4);
+    let val = read(APDS9960_GCONF4);
 
     /* Set bits in register to given value */
     mode &= 0b00000001;
@@ -1789,5 +1708,98 @@ function setGestureMode(mode)
     val |= mode;
 
     /* Write register value back into GCONF4 register */
-    this.write(APDS9960_GCONF4, val);
+    write(APDS9960_GCONF4, val);
+}
+
+/**
+ * @brief Configures I2C communications and initializes registers to defaults
+ *
+ * @return True if initialized successfully. False otherwise.
+ */
+    var read = apds.read;
+    var write = apds.write;
+
+    apds.readProximity = readProximity;
+    apds.readGesture = readGesture;
+    apds.readAmbientLight = readAmbientLight;
+    apds.enableLightSensor = enableLightSensor;
+    apds.readRedLight = readRedLight;
+    apds.readGreenLight = readGreenLight;
+    apds.readBlueLight = readBlueLight;
+    console.log('init', Object.keys(apds));
+
+    /* Read ID register and check against known values for APDS-9960 */
+    let id = read(APDS9960_ID);
+    console.log('ID: ', id);
+    if( !(id == APDS9960_ID_1 || id == APDS9960_ID_2) ) {
+        console.log('Wrong ID: ', id);
+        return false;
+    }
+
+    /* Set ENABLE register to 0 (disable all features) */
+    setMode(ALL, OFF);
+
+    /* Set default values for ambient light and proximity registers */
+    write(APDS9960_ATIME, DEFAULT_ATIME);
+    write(APDS9960_WTIME, DEFAULT_WTIME);
+    write(APDS9960_PPULSE, DEFAULT_PROX_PPULSE);
+    write(APDS9960_POFFSET_UR, DEFAULT_POFFSET_UR);
+    write(APDS9960_POFFSET_DL, DEFAULT_POFFSET_DL);
+    write(APDS9960_CONFIG1, DEFAULT_CONFIG1);
+    setLEDDrive(DEFAULT_LDRIVE);
+    setProximityGain(DEFAULT_PGAIN);
+    setAmbientLightGain(DEFAULT_AGAIN);
+    setProxIntLowThresh(DEFAULT_PILT);
+    setProxIntHighThresh(DEFAULT_PIHT);
+    setLightIntLowThreshold(DEFAULT_AILT);
+    setLightIntHighThreshold(DEFAULT_AIHT);
+    write(APDS9960_PERS, DEFAULT_PERS);
+    write(APDS9960_CONFIG2, DEFAULT_CONFIG2);
+    write(APDS9960_CONFIG3, DEFAULT_CONFIG3);
+
+    /* Set default values for gesture sense registers */
+    setGestureEnterThresh(DEFAULT_GPENTH);
+    setGestureExitThresh(DEFAULT_GEXTH);
+    write(APDS9960_GCONF1, DEFAULT_GCONF1);
+    setGestureGain(DEFAULT_GGAIN);
+    setGestureLEDDrive(DEFAULT_GLDRIVE);
+    setGestureWaitTime(DEFAULT_GWTIME);
+    write(APDS9960_GOFFSET_U, DEFAULT_GOFFSET);
+    write(APDS9960_GOFFSET_D, DEFAULT_GOFFSET);
+    write(APDS9960_GOFFSET_L, DEFAULT_GOFFSET);
+    write(APDS9960_GOFFSET_R, DEFAULT_GOFFSET);
+    write(APDS9960_GPULSE, DEFAULT_GPULSE);
+    write(APDS9960_GCONF3, DEFAULT_GCONF3);
+    setGestureIntEnable(DEFAULT_GIEN)
+
+    /* Gesture config register dump */
+/*
+#if 0
+    let reg;
+    let val;
+
+    for(reg = 0x80; reg <= 0xAF; reg++) {
+        if( (reg != 0x82) &&
+            (reg != 0x8A) &&
+            (reg != 0x91) &&
+            (reg != 0xA8) &&
+            (reg != 0xAC) &&
+            (reg != 0xAD) )
+        {
+            val = read(reg);
+            Serial.print(reg, HEX);
+            Serial.print(": 0x");
+            Serial.println(val, HEX);
+        }
+    }
+
+    for(reg = 0xE4; reg <= 0xE7; reg++) {
+        val = read(reg);
+        Serial.print(reg, HEX);
+        Serial.print(": 0x");
+        Serial.println(val, HEX);
+    }
+#endif
+*/
+    return true;
 }
