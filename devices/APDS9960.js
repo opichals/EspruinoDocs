@@ -764,6 +764,7 @@ function processGestureData()
     let lr_delta;
     let i;
 
+    let abs = Math.abs;
     let gesture = this.gesture;
     let gesture_data_ = gesture.data_;
 
@@ -964,6 +965,8 @@ function processGestureData()
 function decodeGesture()
 {
     let gesture = this.gesture;
+    let abs = Math.abs;
+
     /* Return if near or far event is detected */
     if( gesture.state_ == NEAR_STATE ) {
         gesture.motion_ = DIR_NEAR;
